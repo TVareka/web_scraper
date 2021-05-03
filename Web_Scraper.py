@@ -2,17 +2,37 @@ from bs4 import BeautifulSoup
 import requests
 import re
 import textwrap
+from urllib.error import HTTPError
+from urllib.error import URLError
+from urllib.request import urlopen
 
 
 # must pass in url and head as strings
 def scrape(URL, head):
+    # Checking for good URL
+    try:
+        urlopen(URL)
+    except HTTPError as e:
+        print(e)
+        exit()
+    except URLError:
+        print("Website cannot be reached")
+        exit()
+
     html_text = requests.get(URL).text
     soup = BeautifulSoup(html_text, 'lxml')
 
-    # finds the header in the wiki page that matches the input for 'head' and appends to output array
+    # Finds the header in the wiki page that matches the input for 'head' and appends to output array
     output = []
     header = soup.find('span', class_='mw-headline', text=head)
-    output.append(header.text)
+
+    # Lets user know if incorrect header name
+    try:
+        output.append(header.text)
+    except AttributeError:
+        print("Header \"" + head + "\" does not exist in the URL provided")
+        exit()
+
     output.append(":")
 
     # Jumps to next paragraph tag to avoid adding unnecessary info from wiki page and appends
