@@ -52,9 +52,15 @@ def scrape(URL, head):
     output = ' '.join(output)
     output = re.sub(r"\[.*?\]+", '', output)
     output = output.replace('\n', '')[:-11]
-    print(textwrap.fill(output, 70))
 
-    # Still need to write this output to a file (?)
+    # Write output to a file
+    f = open("wikiscrape.txt", "w")
+    f.write(textwrap.fill(output, 70))
+
+    # Report successful search to user
+    print("Web Scraper Success")
+
+
 
 
 if __name__ == '__main__':
