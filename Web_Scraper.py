@@ -13,6 +13,7 @@ def scrape(URL, head):
     output = []
     header = soup.find('span', class_='mw-headline', text=head)
     output.append(header.text)
+    output.append(":")
 
     # Jumps to next paragraph tag to avoid adding unnecessary info from wiki page and appends
     para = header.find_next('p')
