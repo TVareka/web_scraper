@@ -4,6 +4,9 @@ import re
 from urllib.error import HTTPError
 from urllib.error import URLError
 from urllib.request import urlopen
+import sys
+import json
+
 
 # must pass in url and head as strings
 def scrape(URL, head):
@@ -11,11 +14,11 @@ def scrape(URL, head):
     try:
         urlopen(URL)
     except HTTPError as e:
-        print(e)
-        exit()
+        sys.stderr.write(str(e))
+        return
     except URLError:
-        print("Website cannot be reached")
-        exit()
+        sys.stderr.write("Website cannot be reached")
+        return
 
     html_text = requests.get(URL).text
     soup = BeautifulSoup(html_text, 'lxml')
@@ -27,16 +30,16 @@ def scrape(URL, head):
 
     # Lets user know if incorrect header name
     try:
-        output.append(header.text)
+        header.text
     except AttributeError:
-        print("Header \"" + head + "\" does not exist in the URL provided")
-        exit()
+        sys.stderr.write("Header \"" + head + "\" does not exist in the URL provided")
+        return
 
-    output.append(":")
+    # output.append(":")
 
     # Jumps to next paragraph tag to avoid adding unnecessary info from wiki page and appends
     para = header.find_parent().find_next_sibling()
-    output.append(para.text)
+    output.append(re.sub(r"\[[0-9]*?\]", '', para.text))
     # json_out.append(para)
 
     # Runs on a loop checking next elements tag.  As long as next tag isn't 'h2' (next header), it changes value
@@ -44,26 +47,25 @@ def scrape(URL, head):
     while True:
         if para.find_next_sibling().name != 'h2':
             para = para.find_next_sibling()
-            output.append(para.text)
-            #json_out.append(para)
+            output.append(re.sub(r"\[[0-9]*?\]", '', para.text))
+            # json_out.append(para)
         else:
             break
 
-    # Cleaning up the output
-    output = ' '.join(output)
-    #output = re.sub(r"\[.*?\]+", '', output)
-    output = re.sub(r"\[[0-9]*?\]", '', output)
-    #output = output.replace('\n', '')[:-11]
-
-    # Write output to a file
-    f = open("wikiscrape.txt", "w")
-    f.write(output)
-
-    # Report successful search to user
-    print("Web Scraper Success")
-
-
+    # Convert to JSON
+    dd = {head: output}
+    json_object = json.dumps(dd)
+    sys.stdout.write(json_object)
+    # output = re.sub(r"\[.*?\]+", '', output)
+    # output = output.replace('\n', '')[:-11]
 
 
 if __name__ == '__main__':
-    scrape('https://en.wikipedia.org/wiki/Blackjack', 'Rules')
+    if len(sys.argv) == 3:
+        url_str = sys.argv[1]
+        header_str = sys.argv[2]
+        scrape(url_str, header_str)
+    else:
+        sys.stderr.write("::ERROR::")
+    sys.stdout.flush()
+    sys.stderr.flush()
