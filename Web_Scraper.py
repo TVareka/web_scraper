@@ -4,6 +4,10 @@ import re
 from urllib.error import HTTPError
 from urllib.error import URLError
 from urllib.request import urlopen
+# from urllib2 import HTTPError
+# from urllib2 import URLError
+# from urllib2 import urlopen
+# import lxml
 import sys
 import json
 
